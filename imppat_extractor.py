@@ -509,7 +509,7 @@ if st.button("⬇️ Start Download", type="primary", disabled=len(plants_to_dow
     st.success(f"✓ Done! {total_sdfs} SDF files packed into ZIP.")
     st.download_button(
         label="📥 Download ZIP",
-        data=zip_bytes,
+        data=st.session_state["zip_bytes"],
         file_name="imppat_sdfs.zip",
         mime="application/zip",
         type="primary",
