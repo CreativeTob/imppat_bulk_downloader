@@ -498,8 +498,13 @@ if st.button("⬇️ Start Download", type="primary", disabled=len(plants_to_dow
     total_sdfs = sum(len(c) for c in compounds_by_plant.values())
     st.markdown(f"Downloading **{total_sdfs} SDF files** across {len(compounds_by_plant)} plant(s)...")
 
+    # zip_buf = download_sdfs_to_zip(compounds_by_plant)
+    # zip_bytes = zip_buf.getvalue()  # read into bytes before Streamlit reruns
+
     zip_buf = download_sdfs_to_zip(compounds_by_plant)
-    zip_bytes = zip_buf.getvalue()  # read into bytes before Streamlit reruns
+    # Store bytes in session_state so they survive Streamlit reruns
+    st.session_state["zip_bytes"] = zip_buf.getvalue()
+    st.session_state["zip_ready"] = True
 
     st.success(f"✓ Done! {total_sdfs} SDF files packed into ZIP.")
     st.download_button(
