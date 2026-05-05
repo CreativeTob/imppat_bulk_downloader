@@ -483,17 +483,7 @@ with st.sidebar:
     if limit_downloads:
         download_limit = st.number_input("Max plants to download", min_value=1, max_value=500, value=10, step=1)
 
-    st.markdown("---")
-    st.markdown("#### Cache")
-    _scan_key_sidebar = selected_letter or "ALL"
-    _age = cache_age(_scan_key_sidebar)
-    if _age:
-        st.markdown(f'<p class="cache-info">Cached {_age}</p>', unsafe_allow_html=True)
-    if st.button("🔄 Clear Cache & Rescan"):
-        if os.path.exists(cache_path(_scan_key_sidebar)):
-            os.remove(cache_path(_scan_key_sidebar))
-        st.session_state.scanned = False
-        st.rerun()
+
 
 
 # ── PRE-FILTERING ─────────────────────────────────────────────────────────────
@@ -504,10 +494,15 @@ else:
 
 # ── SCAN STATE ────────────────────────────────────────────────────────────────
 visible_plants_display = []
-is_scanned = st.session_state.get("scanned", False)
 scan_key   = selected_letter or "ALL"
 
-# Auto-load from disk cache into session state if not already loaded
+# Reset scan state if the user switched letter/mode
+if st.session_state.get("scanned_key") != scan_key:
+    st.session_state.scanned = False
+
+is_scanned = st.session_state.get("scanned", False)
+
+# Auto-load from disk cache if not already in session
 if not is_scanned:
     cached = load_cache(scan_key)
     if cached:
@@ -546,20 +541,29 @@ if is_scanned:
         )[:int(download_limit)]
 
 else:
-    st.info("🔍 Filters (Range/Part) are inactive. Click 'Scan compounds' to enable them.")
-    if st.button("🔍 Scan compounds now", type="primary"):
-        prog    = st.progress(0)
-        results = scan_plants_parallel(base_plants, prog)
-        save_cache(scan_key, results)
-        st.session_state.scan_results = results
-        st.session_state.scanned      = True
-        st.session_state.scanned_key  = scan_key
-        st.rerun()
+    st.info(f"🔍 Scan {len(base_plants)} plants to enable compound filters and see compound counts.")
+    col_scan, col_rescan = st.columns([1, 1])
+    with col_scan:
+        if st.button("🔍 Scan compounds", type="primary"):
+            prog    = st.progress(0)
+            results = scan_plants_parallel(base_plants, prog)
+            save_cache(scan_key, results)
+            st.session_state.scan_results = results
+            st.session_state.scanned      = True
+            st.session_state.scanned_key  = scan_key
+            st.rerun()
 
     visible_plants_display = [
         {"name": p["name"], "url": p["url"], "count": "?", "compounds": []}
         for p in base_plants
     ]
+
+if is_scanned:
+    if st.button("🔄 Rescan / Clear Cache"):
+        if os.path.exists(cache_path(scan_key)):
+            os.remove(cache_path(scan_key))
+        st.session_state.scanned = False
+        st.rerun()
 
 
 # ── STATS ─────────────────────────────────────────────────────────────────────
