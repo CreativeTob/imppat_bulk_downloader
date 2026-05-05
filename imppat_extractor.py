@@ -603,7 +603,6 @@ with c3: st.metric("Total Compounds", total_cpds)
 
 
 # ── PLANT LIST ────────────────────────────────────────────────────────────────
-# ── PLANT LIST ────────────────────────────────────────────────────────────────
 if visible_plants_display:
 
     # Header row: select all / clear / count
@@ -663,7 +662,7 @@ if visible_plants_display:
         
             with col_right:
                 # Toggle button to add/remove from selection
-                if st.button("Toggle", key=f"toggle_{p_idx}", help=f"Select/Deselect {name}"):
+                if st.button(" ", key=f"toggle_{p_idx}", help=f"Select/Deselect {name}"):
                     if is_sel:
                         st.session_state.selected_plants.discard(name)
                     else:
