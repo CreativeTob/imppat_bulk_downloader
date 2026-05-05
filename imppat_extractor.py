@@ -401,19 +401,23 @@ hr { border-color: #2a2f3e !important; }
     margin-bottom: 0.8rem;
 }
 
-/* Make plant card toggle buttons invisible — card HTML is the visual */
-div[data-testid="stHorizontalBlock"] { gap: 0 !important; }
-button[kind="secondary"] {
-    opacity: 0 !important;
-    height: 2px !important;
+/* Make plant card toggle buttons slim and subtle — not invisible, just minimal */
+button[data-testid^="baseButton-secondary"][kind="secondary"] {
+    background: transparent !important;
+    border: 1px solid #2a2f3e !important;
+    color: #8b949e !important;
+    font-size: 0.72rem !important;
+    padding: 2px 10px !important;
     min-height: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    margin-top: -0.4rem !important;
+    height: auto !important;
+    margin-top: -0.3rem !important;
+    margin-bottom: 0.4rem !important;
     width: 100% !important;
-    cursor: pointer !important;
-    position: relative !important;
-    z-index: 10 !important;
+    border-radius: 0 0 10px 10px !important;
+}
+button[data-testid^="baseButton-secondary"][kind="secondary"]:hover {
+    border-color: #58a6ff !important;
+    color: #58a6ff !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -541,8 +545,8 @@ if is_scanned:
         )[:int(download_limit)]
 
 else:
-    st.info(f"🔍 Scan {len(base_plants)} plants to enable compound filters and see compound counts.")
-    col_scan, col_rescan = st.columns([1, 1])
+    st.info(f"🔍 {len(base_plants)} plants found. Scan to see compound counts and enable filters.")
+    col_scan, _ = st.columns([1, 3])
     with col_scan:
         if st.button("🔍 Scan compounds", type="primary"):
             prog    = st.progress(0)
@@ -559,11 +563,13 @@ else:
     ]
 
 if is_scanned:
-    if st.button("🔄 Rescan / Clear Cache"):
-        if os.path.exists(cache_path(scan_key)):
-            os.remove(cache_path(scan_key))
-        st.session_state.scanned = False
-        st.rerun()
+    col_rescan, _ = st.columns([1, 4])
+    with col_rescan:
+        if st.button("🔄 Rescan / Clear Cache"):
+            if os.path.exists(cache_path(scan_key)):
+                os.remove(cache_path(scan_key))
+            st.session_state.scanned = False
+            st.rerun()
 
 
 # ── STATS ─────────────────────────────────────────────────────────────────────
