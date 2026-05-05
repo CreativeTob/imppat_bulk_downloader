@@ -440,23 +440,6 @@ button[kind="secondary"] {
     border-color: #58a6ff !important;
     cursor: pointer;
 }
-
-/* Hide toggle button visually but keep it functional */
-button[kind="secondary"][data-testid^="baseButton"] {
-    background: transparent !important;
-    border: none !important;
-    color: transparent !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    min-height: 0 !important;
-}
-
-/* Make the right column sit flush */
-div[data-testid="column"]:has(button) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
 </style>
 """, unsafe_allow_html=True)
 
