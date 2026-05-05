@@ -617,43 +617,43 @@ if visible_plants_display:
     )
     col_card = st.container()
 
-with col_card:
-    col_left, col_right = st.columns([0.92, 0.08])
-
-    with col_left:
-        st.markdown(f'''
-            <div style="
-                background:{card_bg};
-                border:1.5px solid {card_border};
-                border-radius:14px;
-                padding:0.75rem 1.2rem;
-                margin-bottom:0.4rem;
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-            ">
-                <span style="font-size:1.1rem;margin-right:0.6rem;color:{"#58a6ff" if is_sel else "#8b949e"};">
-                    {checkbox}
-                </span>
-                <span style="font-weight:500;color:#e6edf3;font-size:0.95rem;font-style:italic;flex:1;">
-                    {name}
-                </span>
-                <span style="
-                    background:{badge_bg};color:white;border-radius:20px;
-                    padding:3px 14px;font-size:0.78rem;font-weight:600;white-space:nowrap;
+    with col_card:
+        col_left, col_right = st.columns([0.92, 0.08])
+    
+        with col_left:
+            st.markdown(f'''
+                <div style="
+                    background:{card_bg};
+                    border:1.5px solid {card_border};
+                    border-radius:14px;
+                    padding:0.75rem 1.2rem;
+                    margin-bottom:0.4rem;
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
                 ">
-                    {count} compounds
-                </span>
-            </div>
-        ''', unsafe_allow_html=True)
-
-    with col_right:
-        if st.button("", key=f"toggle_{p_idx}", help=name):
-            if is_sel:
-                st.session_state.selected_plants.discard(name)
-            else:
-                st.session_state.selected_plants.add(name)
-            st.rerun()
+                    <span style="font-size:1.1rem;margin-right:0.6rem;color:{"#58a6ff" if is_sel else "#8b949e"};">
+                        {checkbox}
+                    </span>
+                    <span style="font-weight:500;color:#e6edf3;font-size:0.95rem;font-style:italic;flex:1;">
+                        {name}
+                    </span>
+                    <span style="
+                        background:{badge_bg};color:white;border-radius:20px;
+                        padding:3px 14px;font-size:0.78rem;font-weight:600;white-space:nowrap;
+                    ">
+                        {count} compounds
+                    </span>
+                </div>
+            ''', unsafe_allow_html=True)
+    
+        with col_right:
+            if st.button("", key=f"toggle_{p_idx}", help=name):
+                if is_sel:
+                    st.session_state.selected_plants.discard(name)
+                else:
+                    st.session_state.selected_plants.add(name)
+                st.rerun()
 
     if len(visible_plants_display) > 200:
         st.info(f"Showing first 200 of {len(visible_plants_display)} plants. Narrow your filters to see more.")
