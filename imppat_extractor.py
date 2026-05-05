@@ -634,43 +634,64 @@ if visible_plants_display:
     )
     col_card = st.container()
 
-    with col_card:
-        col_left, col_right = st.columns([0.92, 0.08])
-
-    with col_left:
-        st.markdown(f'''
-            <div style="
-                background:{card_bg};
-                border:1.5px solid {card_border};
-                border-radius:14px;
-                padding:0.75rem 1.2rem;
-                margin-bottom:0.4rem;
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-            ">
-                <span style="font-size:1.1rem;margin-right:0.6rem;color:{"#58a6ff" if is_sel else "#8b949e"};">
-                    {checkbox}
-                </span>
-                <span style="font-weight:500;color:#e6edf3;font-size:0.95rem;font-style:italic;flex:1;">
-                    {name}
-                </span>
-                <span style="
-                    background:{badge_bg};color:white;border-radius:20px;
-                    padding:3px 14px;font-size:0.78rem;font-weight:600;white-space:nowrap;
-                ">
-                    {count} compounds
-                </span>
-            </div>
-        ''', unsafe_allow_html=True)
-
-    with col_right:
-        if st.button("", key=f"toggle_{p_idx}", help=name):
-            if is_sel:
-                st.session_state.selected_plants.discard(name)
-            else:
-                st.session_state.selected_plants.add(name)
+    col_sa, col_da, _ = st.columns([0.12, 0.12, 0.76])
+    with col_sa:
+        if st.button("Select all", key="select_all_btn"):
+            st.session_state.selected_plants = {p["name"] for p in visible_plants_display}
             st.rerun()
+
+    with col_da:
+        if st.button("Clear", key="deselect_all_btn"):
+            st.session_state.selected_plants = set()
+            st.rerun()
+
+    # Plant cards with inline checkbox
+    for p_idx, plant in enumerate(visible_plants_display[:200]):
+        name    = plant["name"]
+        count   = plant["count"]
+        is_sel  = name in st.session_state.selected_plants
+
+        card_border = "#58a6ff" if is_sel else "#2a2f3e"
+        card_bg     = "#1a2744" if is_sel else "#161b27"
+        badge_bg    = "#1f6feb" if is_sel else "#2d6a4f"
+        checkbox    = "☑" if is_sel else "☐"
+
+        card_key = f"card_{p_idx}"
+
+    if st.button("", key=card_key, help=name, use_container_width=True):
+        if is_sel:
+            st.session_state.selected_plants.discard(name)
+        else:
+            st.session_state.selected_plants.add(name)
+        st.rerun()
+    
+    st.markdown(f'''
+        <div class="plant-card-clickable" style="
+            background:{card_bg};
+            border:1.5px solid {card_border};
+            border-radius:14px;
+            padding:0.75rem 1.2rem;
+            margin-top:-2.6rem;
+            margin-bottom:0.6rem;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            pointer-events:none;
+        ">
+            <span style="font-size:1.1rem;margin-right:0.6rem;color:{"#58a6ff" if is_sel else "#8b949e"};">
+                {checkbox}
+            </span>
+            <span style="font-weight:500;color:#e6edf3;font-size:0.95rem;font-style:italic;flex:1;">
+                {name}
+            </span>
+            <span style="
+                background:{badge_bg};color:white;border-radius:20px;
+                padding:3px 14px;font-size:0.78rem;font-weight:600;white-space:nowrap;
+            ">
+                {count} compounds
+            </span>
+        </div>
+    ''', unsafe_allow_html=True)
 
     if len(visible_plants_display) > 200:
         st.info(f"Showing first 200 of {len(visible_plants_display)} plants. Narrow your filters to see more.")
