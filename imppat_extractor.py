@@ -603,9 +603,10 @@ with c3: st.metric("Total Compounds", total_cpds)
 
 
 # ── PLANT LIST ────────────────────────────────────────────────────────────────
+# ── PLANT LIST ────────────────────────────────────────────────────────────────
 if visible_plants_display:
 
-    # Header row: select all / clear / count — tightly grouped
+    # Header row: select all / clear / count
     n_selected = len(st.session_state.selected_plants)
     st.markdown(
         f'''<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem;">
@@ -615,48 +616,62 @@ if visible_plants_display:
         </div>''',
         unsafe_allow_html=True
     )
-    col_card = st.container()
 
-    with col_card:
-        col_left, col_right = st.columns([0.92, 0.08])
-    
-        with col_left:
-            st.markdown(f'''
-                <div style="
-                    background:{card_bg};
-                    border:1.5px solid {card_border};
-                    border-radius:14px;
-                    padding:0.75rem 1.2rem;
-                    margin-bottom:0.4rem;
-                    display:flex;
-                    justify-content:space-between;
-                    align-items:center;
-                ">
-                    <span style="font-size:1.1rem;margin-right:0.6rem;color:{"#58a6ff" if is_sel else "#8b949e"};">
-                        {checkbox}
-                    </span>
-                    <span style="font-weight:500;color:#e6edf3;font-size:0.95rem;font-style:italic;flex:1;">
-                        {name}
-                    </span>
-                    <span style="
-                        background:{badge_bg};color:white;border-radius:20px;
-                        padding:3px 14px;font-size:0.78rem;font-weight:600;white-space:nowrap;
+    # We only show the first 200 to prevent browser lag
+    display_limit = 200
+    for p_idx, plant in enumerate(visible_plants_display[:display_limit]):
+        name = plant["name"]
+        count = plant["count"]
+        is_sel = name in st.session_state.selected_plants
+        
+        # Define the missing variables for the CSS
+        card_bg = "#1f2937" if is_sel else "#161b27"
+        card_border = "#58a6ff" if is_sel else "#2a2f3e"
+        badge_bg = "linear-gradient(135deg, #238636, #2ea043)" if is_sel else "linear-gradient(135deg, #1f6feb, #388bfd)"
+        checkbox = "☑" if is_sel else "☐"
+
+        col_card = st.container()
+        with col_card:
+            col_left, col_right = st.columns([0.92, 0.08])
+        
+            with col_left:
+                st.markdown(f'''
+                    <div style="
+                        background:{card_bg};
+                        border:1.5px solid {card_border};
+                        border-radius:14px;
+                        padding:0.75rem 1.2rem;
+                        margin-bottom:0.4rem;
+                        display:flex;
+                        justify-content:space-between;
+                        align-items:center;
                     ">
-                        {count} compounds
-                    </span>
-                </div>
-            ''', unsafe_allow_html=True)
-    
-        with col_right:
-            if st.button("", key=f"toggle_{p_idx}", help=name):
-                if is_sel:
-                    st.session_state.selected_plants.discard(name)
-                else:
-                    st.session_state.selected_plants.add(name)
-                st.rerun()
+                        <span style="font-size:1.1rem;margin-right:0.6rem;color:{'#58a6ff' if is_sel else '#8b949e'};">
+                            {checkbox}
+                        </span>
+                        <span style="font-weight:500;color:#e6edf3;font-size:0.95rem;font-style:italic;flex:1;">
+                            {name}
+                        </span>
+                        <span style="
+                            background:{badge_bg};color:white;border-radius:20px;
+                            padding:3px 14px;font-size:0.78rem;font-weight:600;white-space:nowrap;
+                        ">
+                            {count} compounds
+                        </span>
+                    </div>
+                ''', unsafe_allow_html=True)
+        
+            with col_right:
+                # Toggle button to add/remove from selection
+                if st.button("Toggle", key=f"toggle_{p_idx}", help=f"Select/Deselect {name}"):
+                    if is_sel:
+                        st.session_state.selected_plants.discard(name)
+                    else:
+                        st.session_state.selected_plants.add(name)
+                    st.rerun()
 
-    if len(visible_plants_display) > 200:
-        st.info(f"Showing first 200 of {len(visible_plants_display)} plants. Narrow your filters to see more.")
+    if len(visible_plants_display) > display_limit:
+        st.info(f"Showing first {display_limit} of {len(visible_plants_display)} plants. Narrow your filters to see more.")
 
     # Per-compound expander for selected plants
     selected_in_view = [p for p in visible_plants_display if p["name"] in st.session_state.selected_plants]
