@@ -483,6 +483,18 @@ with st.sidebar:
     if limit_downloads:
         download_limit = st.number_input("Max plants to download", min_value=1, max_value=500, value=10, step=1)
 
+    st.markdown("---")
+    st.markdown("#### Cache")
+    _scan_key_sidebar = selected_letter or "ALL"
+    _age = cache_age(_scan_key_sidebar)
+    if _age:
+        st.markdown(f'<p class="cache-info">Cached {_age}</p>', unsafe_allow_html=True)
+    if st.button("🔄 Clear Cache & Rescan"):
+        if os.path.exists(cache_path(_scan_key_sidebar)):
+            os.remove(cache_path(_scan_key_sidebar))
+        st.session_state.scanned = False
+        st.rerun()
+
 
 # ── PRE-FILTERING ─────────────────────────────────────────────────────────────
 if browse_mode == "By letter" and selected_letter:
@@ -505,12 +517,6 @@ if not is_scanned:
         is_scanned = True
 
 if is_scanned:
-    if st.sidebar.button("🔄 Clear Cache & Rescan"):
-        if os.path.exists(cache_path(scan_key)):
-            os.remove(cache_path(scan_key))
-        st.session_state.scanned = False
-        st.rerun()
-
     scan = st.session_state.scan_results
     for plant in base_plants:
         result = scan.get(plant["name"])
@@ -557,6 +563,26 @@ else:
 
 
 # ── STATS ─────────────────────────────────────────────────────────────────────
+# Show active browse context
+if browse_mode == "By letter" and selected_letter:
+    st.markdown(
+        f'<div style="display:inline-block;background:#1f3a5f;border:1px solid #58a6ff;'
+        f'border-radius:8px;padding:0.3rem 1rem;margin-bottom:1rem;">'
+        f'<span style="color:#8b949e;font-size:0.8rem;">Browsing letter </span>'
+        f'<span style="color:#58a6ff;font-size:1.2rem;font-weight:700;"> {selected_letter}</span>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
+else:
+    st.markdown(
+        '<div style="display:inline-block;background:#1a2a1a;border:1px solid #2d6a4f;'
+        'border-radius:8px;padding:0.3rem 1rem;margin-bottom:1rem;">'
+        '<span style="color:#8b949e;font-size:0.8rem;">Browsing </span>'
+        '<span style="color:#3fb950;font-size:0.95rem;font-weight:600;"> All plants</span>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
 total_cpds = sum(p["count"] for p in visible_plants_display if isinstance(p["count"], int))
 
 c1, c2, c3 = st.columns(3)
