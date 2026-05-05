@@ -429,37 +429,39 @@ with c3:
 
 
 # ── PLANT LIST ────────────────────────────────────────────────────────────────
-select_all = st.checkbox("Select all visible", key="master_select")
+if visible_plants_display:
+    df_display = pd.DataFrame([
+        {"Plant": p["name"], "Compounds": p["count"]}
+        for p in visible_plants_display
+    ])
 
-for p_idx, plant in enumerate(visible_plants_display[:200]):
-    check_key  = f"chk_{plant['name']}_{p_idx}"
-    col_check, col_info = st.columns([0.05, 0.95])
+    event = st.dataframe(
+        df_display,
+        use_container_width=True,
+        hide_index=True,
+        on_select="rerun",
+        selection_mode="multi-row",
+        key="plant_table",
+    )
 
-    with col_check:
-        is_selected = st.checkbox("", key=check_key, value=select_all)
-        if is_selected:
-            st.session_state.selected_plants.add(plant["name"])
-        else:
-            st.session_state.selected_plants.discard(plant["name"])
+    # Update selected plants from table selection
+    selected_rows = event.selection.rows if event.selection else []
+    st.session_state.selected_plants = {
+        visible_plants_display[i]["name"] for i in selected_rows
+    }
 
-    with col_info:
-        badge = plant["count"]
-        st.markdown(f'''
-            <div class="plant-card">
-                <span class="plant-name">{plant["name"]}</span>
-                <span class="compound-badge">{badge} compounds</span>
-            </div>
-        ''', unsafe_allow_html=True)
-
-        # Per-compound download expander — only available after scan
-        if st.session_state.get("scanned") and plant.get("compounds"):
-            with st.expander(f"View {len(plant['compounds'])} compounds"):
+    # Per-compound expander — shown below table for selected plants only
+    if st.session_state.get("scanned") and selected_rows:
+        st.markdown("#### Selected plant compounds")
+        for i in selected_rows:
+            plant = visible_plants_display[i]
+            if not plant.get("compounds"):
+                continue
+            with st.expander(f"{plant['name']} — {len(plant['compounds'])} compounds"):
                 for c_idx, compound in enumerate(plant["compounds"]):
                     c1, c2 = st.columns([0.8, 0.2])
                     c1.write(f"**{compound['name']}** ({compound['plant_part']})")
-
-                    btn_key = f"btn_{p_idx}_{c_idx}"
-
+                    btn_key = f"btn_{i}_{c_idx}"
                     if f"data_{btn_key}" not in st.session_state:
                         if c2.button("Get SDF", key=f"load_{btn_key}"):
                             with st.spinner("..."):
@@ -475,9 +477,8 @@ for p_idx, plant in enumerate(visible_plants_display[:200]):
                             key=btn_key,
                             type="primary",
                         )
-
-if len(visible_plants_display) > 200:
-    st.info(f"Showing first 200 of {len(visible_plants_display)} plants.")
+else:
+    st.info("No plants match the current filters.")
 
 
 # ── DOWNLOAD SECTION ──────────────────────────────────────────────────────────
@@ -486,6 +487,8 @@ st.markdown("### 📦 Download SDFs")
 
 if download_mode == "Selected plants only":
     plants_to_download = [p for p in visible_plants_display if p["name"] in st.session_state.selected_plants]
+    if not plants_to_download:
+        st.warning("No plants selected. Click rows in the table above to select, or switch to 'All filtered plants'.")
 else:
     plants_to_download = visible_plants_display
 
