@@ -430,7 +430,7 @@ div[data-testid="column"] > div:has(button#deselect_all_btn) {
 /* Make invisible button overlay behave like a card */
 button[kind="secondary"] {
     height: 2.6rem !important;
-    opacity: 0;
+    opacity: 1;
     position: relative;
     z-index: 2;
 }
