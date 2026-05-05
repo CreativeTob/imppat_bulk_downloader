@@ -617,14 +617,14 @@ if visible_plants_display:
     )
     col_sa, col_da, _ = st.columns([0.12, 0.12, 0.76])
     with col_sa:
-    if st.button("Select all", key="select_all_btn"):
-        st.session_state.selected_plants = {p["name"] for p in visible_plants_display}
-        st.rerun()
+        if st.button("Select all", key="select_all_btn"):
+            st.session_state.selected_plants = {p["name"] for p in visible_plants_display}
+            st.rerun()
 
     with col_da:
-    if st.button("Clear", key="deselect_all_btn"):
-        st.session_state.selected_plants = set()
-        st.rerun()
+        if st.button("Clear", key="deselect_all_btn"):
+            st.session_state.selected_plants = set()
+            st.rerun()
 
     # Plant cards with inline checkbox
     for p_idx, plant in enumerate(visible_plants_display[:200]):
