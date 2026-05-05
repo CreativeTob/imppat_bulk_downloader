@@ -400,6 +400,21 @@ hr { border-color: #2a2f3e !important; }
     margin-top: -0.3rem;
     margin-bottom: 0.8rem;
 }
+
+/* Make plant card toggle buttons invisible — card HTML is the visual */
+div[data-testid="stHorizontalBlock"] { gap: 0 !important; }
+button[kind="secondary"] {
+    opacity: 0 !important;
+    height: 2px !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    margin-top: -0.4rem !important;
+    width: 100% !important;
+    cursor: pointer !important;
+    position: relative !important;
+    z-index: 10 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -552,52 +567,91 @@ with c3: st.metric("Total Compounds", total_cpds)
 
 # ── PLANT LIST ────────────────────────────────────────────────────────────────
 if visible_plants_display:
-    st.markdown(
-        '<p class="hint-text">💡 Click a row to select it. Hold Shift or Ctrl to select multiple plants.</p>',
-        unsafe_allow_html=True
-    )
 
-    df_display = pd.DataFrame([
-        {"🌿  Plant Name": p["name"], "Compounds": p["count"]}
-        for p in visible_plants_display
-    ])
+    # Select all / deselect all buttons
+    col_sa, col_da, col_hint = st.columns([1, 1, 5])
+    with col_sa:
+        if st.button("✓ Select all", key="select_all_btn"):
+            st.session_state.selected_plants = {p["name"] for p in visible_plants_display}
+            st.rerun()
+    with col_da:
+        if st.button("✗ Clear", key="deselect_all_btn"):
+            st.session_state.selected_plants = set()
+            st.rerun()
+    with col_hint:
+        n_selected = len(st.session_state.selected_plants)
+        if n_selected:
+            st.markdown(
+                f'<p style="color:#58a6ff;font-size:0.85rem;margin-top:0.5rem;">✓ {n_selected} plant(s) selected</p>',
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                '<p style="color:#8b949e;font-size:0.85rem;margin-top:0.5rem;">Click a card to select a plant</p>',
+                unsafe_allow_html=True
+            )
 
-    event = st.dataframe(
-        df_display,
-        use_container_width=True,
-        hide_index=True,
-        on_select="rerun",
-        selection_mode="multi-row",
-        key="plant_table",
-        column_config={
-            "🌿  Plant Name": st.column_config.TextColumn(width="large"),
-            "Compounds": st.column_config.NumberColumn(
-                width="small",
-                format="%d",
-            ),
-        },
-    )
+    # Plant cards — one button per card, no checkbox widget
+    for p_idx, plant in enumerate(visible_plants_display[:200]):
+        name       = plant["name"]
+        count      = plant["count"]
+        is_sel     = name in st.session_state.selected_plants
+        card_border = "#58a6ff" if is_sel else "#2a2f3e"
+        card_bg     = "#1a2744" if is_sel else "#161b27"
+        badge_bg    = "#1f6feb" if is_sel else "#2d6a4f"
+        check_icon  = "✓ " if is_sel else ""
 
-    selected_rows = event.selection.rows if event.selection else []
-    st.session_state.selected_plants = {
-        visible_plants_display[i]["name"] for i in selected_rows
-    }
+        card_html = f"""
+        <div style="
+            background:{card_bg};
+            border:1.5px solid {card_border};
+            border-radius:14px;
+            padding:0.85rem 1.2rem;
+            margin-bottom:0.4rem;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            transition:all 0.2s;
+        ">
+            <span style="font-weight:500;color:#e6edf3;font-size:0.95rem;font-style:italic;">
+                {check_icon}{name}
+            </span>
+            <span style="
+                background:{badge_bg};
+                color:white;
+                border-radius:20px;
+                padding:3px 14px;
+                font-size:0.78rem;
+                font-weight:600;
+                white-space:nowrap;
+            ">{count} compounds</span>
+        </div>
+        """
+        # Render card + invisible toggle button stacked
+        st.markdown(card_html, unsafe_allow_html=True)
+        if st.button(
+            "Deselect" if is_sel else "Select",
+            key=f"toggle_{p_idx}",
+            help=f"{'Deselect' if is_sel else 'Select'} {name}",
+        ):
+            if is_sel:
+                st.session_state.selected_plants.discard(name)
+            else:
+                st.session_state.selected_plants.add(name)
+            st.rerun()
 
-    if selected_rows:
-        st.markdown(
-            f'<p class="hint-text">✓ {len(selected_rows)} plant(s) selected</p>',
-            unsafe_allow_html=True
-        )
+    if len(visible_plants_display) > 200:
+        st.info(f"Showing first 200 of {len(visible_plants_display)} plants. Narrow your filters to see more.")
 
-    # Per-compound expander — shown below table for selected plants only
-    if st.session_state.get("scanned") and selected_rows:
+    # Per-compound expander for selected plants
+    selected_in_view = [p for p in visible_plants_display if p["name"] in st.session_state.selected_plants]
+    if st.session_state.get("scanned") and selected_in_view:
+        st.markdown("---")
         st.markdown('<div class="section-label">Compounds in selected plants</div>', unsafe_allow_html=True)
-        for i in selected_rows:
-            plant = visible_plants_display[i]
+        for plant in selected_in_view:
             if not plant.get("compounds"):
                 continue
             with st.expander(f"🌱 {plant['name']}  ·  {len(plant['compounds'])} compounds"):
-                # Group by plant part for cleaner display
                 parts = {}
                 for compound in plant["compounds"]:
                     parts.setdefault(compound["plant_part"], []).append(compound)
@@ -609,6 +663,7 @@ if visible_plants_display:
                         f'📍 {part or "Unknown part"}</div>',
                         unsafe_allow_html=True
                     )
+                    p_idx = visible_plants_display.index(plant)
                     for c_idx, compound in enumerate(part_compounds):
                         global_idx = plant["compounds"].index(compound)
                         c1, c2 = st.columns([0.82, 0.18])
@@ -619,7 +674,7 @@ if visible_plants_display:
                             f'</div>',
                             unsafe_allow_html=True
                         )
-                        btn_key = f"btn_{i}_{global_idx}"
+                        btn_key = f"btn_{p_idx}_{global_idx}"
                         if f"data_{btn_key}" not in st.session_state:
                             if c2.button("⬇ SDF", key=f"load_{btn_key}"):
                                 with st.spinner(""):
