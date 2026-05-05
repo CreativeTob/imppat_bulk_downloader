@@ -617,8 +617,8 @@ if visible_plants_display:
     )
     col_card = st.container()
 
-with col_card:
-    col_left, col_right = st.columns([0.92, 0.08])
+    with col_card:
+        col_left, col_right = st.columns([0.92, 0.08])
 
     with col_left:
         st.markdown(f'''
