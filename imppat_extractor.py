@@ -573,26 +573,6 @@ if is_scanned:
 
 
 # ── STATS ─────────────────────────────────────────────────────────────────────
-# Show active browse context
-if browse_mode == "By letter" and selected_letter:
-    st.markdown(
-        f'<div style="display:inline-block;background:#1f3a5f;border:1px solid #58a6ff;'
-        f'border-radius:8px;padding:0.3rem 1rem;margin-bottom:1rem;">'
-        f'<span style="color:#8b949e;font-size:0.8rem;">Browsing letter </span>'
-        f'<span style="color:#58a6ff;font-size:1.2rem;font-weight:700;"> {selected_letter}</span>'
-        f'</div>',
-        unsafe_allow_html=True
-    )
-else:
-    st.markdown(
-        '<div style="display:inline-block;background:#1a2a1a;border:1px solid #2d6a4f;'
-        'border-radius:8px;padding:0.3rem 1rem;margin-bottom:1rem;">'
-        '<span style="color:#8b949e;font-size:0.8rem;">Browsing </span>'
-        '<span style="color:#3fb950;font-size:0.95rem;font-weight:600;"> All plants</span>'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
 total_cpds = sum(p["count"] for p in visible_plants_display if isinstance(p["count"], int))
 
 c1, c2, c3 = st.columns(3)
@@ -604,77 +584,65 @@ with c3: st.metric("Total Compounds", total_cpds)
 # ── PLANT LIST ────────────────────────────────────────────────────────────────
 if visible_plants_display:
 
-    # Select all / deselect all buttons
-    col_sa, col_da, col_hint = st.columns([1, 1, 5])
+    # Header row: select all / clear / count — tightly grouped
+    n_selected = len(st.session_state.selected_plants)
+    st.markdown(
+        f'''<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem;">
+            <span style="color:#8b949e;font-size:0.85rem;">
+                {f"✓ {n_selected} selected" if n_selected else "Select plants below"}
+            </span>
+        </div>''',
+        unsafe_allow_html=True
+    )
+    col_sa, col_da, col_spacer = st.columns([0.15, 0.12, 0.73])
     with col_sa:
-        if st.button("✓ Select all", key="select_all_btn"):
+        if st.button("Select all", key="select_all_btn"):
             st.session_state.selected_plants = {p["name"] for p in visible_plants_display}
             st.rerun()
     with col_da:
-        if st.button("✗ Clear", key="deselect_all_btn"):
+        if st.button("Clear", key="deselect_all_btn"):
             st.session_state.selected_plants = set()
             st.rerun()
-    with col_hint:
-        n_selected = len(st.session_state.selected_plants)
-        if n_selected:
-            st.markdown(
-                f'<p style="color:#58a6ff;font-size:0.85rem;margin-top:0.5rem;">✓ {n_selected} plant(s) selected</p>',
-                unsafe_allow_html=True
-            )
-        else:
-            st.markdown(
-                '<p style="color:#8b949e;font-size:0.85rem;margin-top:0.5rem;">Click a card to select a plant</p>',
-                unsafe_allow_html=True
-            )
 
-    # Plant cards — one button per card, no checkbox widget
+    # Plant cards with inline checkbox
     for p_idx, plant in enumerate(visible_plants_display[:200]):
-        name       = plant["name"]
-        count      = plant["count"]
-        is_sel     = name in st.session_state.selected_plants
+        name    = plant["name"]
+        count   = plant["count"]
+        is_sel  = name in st.session_state.selected_plants
+
         card_border = "#58a6ff" if is_sel else "#2a2f3e"
         card_bg     = "#1a2744" if is_sel else "#161b27"
         badge_bg    = "#1f6feb" if is_sel else "#2d6a4f"
-        check_icon  = "✓ " if is_sel else ""
+        checkbox    = "☑" if is_sel else "☐"
 
-        card_html = f"""
-        <div style="
-            background:{card_bg};
-            border:1.5px solid {card_border};
-            border-radius:14px;
-            padding:0.85rem 1.2rem;
-            margin-bottom:0.4rem;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            transition:all 0.2s;
-        ">
-            <span style="font-weight:500;color:#e6edf3;font-size:0.95rem;font-style:italic;">
-                {check_icon}{name}
-            </span>
-            <span style="
-                background:{badge_bg};
-                color:white;
-                border-radius:20px;
-                padding:3px 14px;
-                font-size:0.78rem;
-                font-weight:600;
-                white-space:nowrap;
-            ">{count} compounds</span>
-        </div>
-        """
-        # Render card + invisible toggle button stacked
-        st.markdown(card_html, unsafe_allow_html=True)
-        if st.button(
-            "Deselect" if is_sel else "Select",
-            key=f"toggle_{p_idx}",
-            help=f"{'Deselect' if is_sel else 'Select'} {name}",
-        ):
-            if is_sel:
-                st.session_state.selected_plants.discard(name)
-            else:
-                st.session_state.selected_plants.add(name)
-            st.rerun()
+        col_card, col_btn = st.columns([0.93, 0.07])
+        with col_card:
+            st.markdown(f'''
+                <div style="
+                    background:{card_bg};
+                    border:1.5px solid {card_border};
+                    border-radius:14px;
+                    padding:0.75rem 1.2rem;
+                    margin-bottom:0.4rem;
+                    display:flex;
+                    justify-content:space-between;
+                    align-items:center;
+                ">
+                    <span style="font-size:1.1rem;margin-right:0.6rem;color:{"#58a6ff" if is_sel else "#8b949e"};">{checkbox}</span>
+                    <span style="font-weight:500;color:#e6edf3;font-size:0.95rem;font-style:italic;flex:1;">{name}</span>
+                    <span style="
+                        background:{badge_bg};color:white;border-radius:20px;
+                        padding:3px 14px;font-size:0.78rem;font-weight:600;white-space:nowrap;
+                    ">{count} compounds</span>
+                </div>
+            ''', unsafe_allow_html=True)
+        with col_btn:
+            if st.button("✓" if not is_sel else "✗", key=f"toggle_{p_idx}", help=name):
+                if is_sel:
+                    st.session_state.selected_plants.discard(name)
+                else:
+                    st.session_state.selected_plants.add(name)
+                st.rerun()
 
     if len(visible_plants_display) > 200:
         st.info(f"Showing first 200 of {len(visible_plants_display)} plants. Narrow your filters to see more.")
