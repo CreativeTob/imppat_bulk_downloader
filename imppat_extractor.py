@@ -266,36 +266,159 @@ st.set_page_config(page_title="IMPPAT Explorer", page_icon="🌿", layout="wide"
 
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
 html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
 h1, h2, h3 { font-family: 'DM Serif Display', serif !important; }
-.stApp { background: black; }
-.block-container { padding-top: 2rem; }
+
+/* Background */
+.stApp { background: #0f1117; }
+.block-container { padding-top: 2rem; max-width: 1100px; }
+
+/* Sidebar */
+[data-testid="stSidebar"] {
+    background: #161b27;
+    border-right: 1px solid #2a2f3e;
+}
+[data-testid="stSidebar"] * { color: #c9d1d9 !important; }
+[data-testid="stSidebar"] h2 { color: #58a6ff !important; font-size: 1rem !important; }
+
+/* Metrics */
+[data-testid="stMetric"] {
+    background: #161b27;
+    border: 1px solid #2a2f3e;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+}
+[data-testid="stMetricValue"] { color: #58a6ff !important; font-size: 1.8rem !important; }
+[data-testid="stMetricLabel"] { color: #8b949e !important; }
+
+/* Plant cards */
 .plant-card {
-    background: white; border-radius: 50px; padding: 1rem 1.2rem;
-    margin-bottom: 0.6rem;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    display: flex; justify-content: space-between; align-items: center;
+    background: #161b27;
+    border: 1px solid #2a2f3e;
+    border-radius: 14px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: border-color 0.2s;
 }
-.plant-name { font-weight: 500; color: #1a1a1a; }
+.plant-card:hover { border-color: #58a6ff; }
+.plant-name { font-weight: 500; color: #e6edf3; font-size: 0.95rem; }
+.plant-latin { font-style: italic; color: #8b949e; font-size: 0.82rem; }
 .compound-badge {
-    background: #2d6a4f; color: white; border-radius: 20px;
-    padding: 2px 12px; font-size: 0.8rem; font-weight: 500;
+    background: linear-gradient(135deg, #1f6feb, #388bfd);
+    color: white;
+    border-radius: 20px;
+    padding: 3px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
 }
-.stat-box {
-    background: white; border-radius: 12px; padding: 1.2rem;
-    text-align: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+
+/* Dataframe overrides */
+[data-testid="stDataFrame"] {
+    border: 1px solid #2a2f3e !important;
+    border-radius: 12px !important;
+    overflow: hidden;
 }
-.stat-number { font-size: 2rem; font-weight: 700; color: #2d6a4f; }
-.stat-label  { font-size: 0.85rem; color: #666; margin-top: 0.2rem; }
-.cache-info  { font-size: 0.78rem; color: #888; font-style: italic; }
+[data-testid="stDataFrame"] thead tr th {
+    background: #161b27 !important;
+    color: #58a6ff !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    border-bottom: 1px solid #2a2f3e !important;
+    padding: 0.75rem 1rem !important;
+}
+[data-testid="stDataFrame"] tbody tr td {
+    background: #0f1117 !important;
+    color: #e6edf3 !important;
+    font-size: 0.9rem !important;
+    padding: 0.65rem 1rem !important;
+    border-bottom: 1px solid #1e2433 !important;
+}
+[data-testid="stDataFrame"] tbody tr:hover td {
+    background: #161b27 !important;
+}
+[data-testid="stDataFrame"] tbody tr[aria-selected="true"] td {
+    background: #1f3a5f !important;
+    color: #58a6ff !important;
+}
+
+/* Expander */
+[data-testid="stExpander"] {
+    background: #161b27 !important;
+    border: 1px solid #2a2f3e !important;
+    border-radius: 12px !important;
+    margin-bottom: 0.5rem;
+}
+[data-testid="stExpander"] summary {
+    color: #e6edf3 !important;
+    font-weight: 500 !important;
+    font-size: 0.92rem !important;
+}
+
+/* Buttons */
+.stButton > button {
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    transition: all 0.2s !important;
+}
+.stDownloadButton > button {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+
+/* Divider */
+hr { border-color: #2a2f3e !important; }
+
+/* Info / warning boxes */
+[data-testid="stAlert"] {
+    border-radius: 10px !important;
+    border: 1px solid #2a2f3e !important;
+}
+
+/* Section headers */
+.section-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #58a6ff;
+    margin-bottom: 0.5rem;
+    margin-top: 1.2rem;
+}
+
+/* Hint text */
+.hint-text {
+    font-size: 0.8rem;
+    color: #8b949e;
+    margin-top: -0.3rem;
+    margin-bottom: 0.8rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
 
 # ── HEADER ────────────────────────────────────────────────────────────────────
-st.markdown("# 🌿 IMPPAT Explorer")
-st.markdown("Browse, filter, and bulk-download 2D SDF files from the Indian Medicinal Plants, Phytochemistry and Therapeutics database.")
+st.markdown("""
+<div style="padding: 1.5rem 0 0.5rem 0;">
+    <div style="font-size:0.78rem; font-weight:600; letter-spacing:0.12em; color:#58a6ff; text-transform:uppercase; margin-bottom:0.4rem;">
+        Phytochemical Database
+    </div>
+    <h1 style="font-family:'DM Serif Display',serif; font-size:2.4rem; color:#e6edf3; margin:0; line-height:1.1;">
+        🌿 IMPPAT Explorer
+    </h1>
+    <p style="color:#8b949e; font-size:0.95rem; margin-top:0.6rem; max-width:600px;">
+        Browse, filter, and bulk-download 2D SDF files from India's medicinal plant phytochemistry database.
+        Select plants from the table, then download their structures as a ZIP.
+    </p>
+</div>
+""", unsafe_allow_html=True)
 st.divider()
 
 
@@ -419,19 +542,23 @@ else:
 
 
 # ── STATS ─────────────────────────────────────────────────────────────────────
-st.markdown(f"### Results ({len(visible_plants_display)} plants)")
+total_cpds = sum(p["count"] for p in visible_plants_display if isinstance(p["count"], int))
+
 c1, c2, c3 = st.columns(3)
-with c1: st.metric("Database Total", len(all_plants))
-with c2: st.metric("Filtered Plants", len(visible_plants_display))
-with c3:
-    total_cpds = sum(p["count"] for p in visible_plants_display if isinstance(p["count"], int))
-    st.metric("Total Compounds", total_cpds)
+with c1: st.metric("Plants in Database", len(all_plants))
+with c2: st.metric("Matching Plants", len(visible_plants_display))
+with c3: st.metric("Total Compounds", total_cpds)
 
 
 # ── PLANT LIST ────────────────────────────────────────────────────────────────
 if visible_plants_display:
+    st.markdown(
+        '<p class="hint-text">💡 Click a row to select it. Hold Shift or Ctrl to select multiple plants.</p>',
+        unsafe_allow_html=True
+    )
+
     df_display = pd.DataFrame([
-        {"Plant": p["name"], "Compounds": p["count"]}
+        {"🌿  Plant Name": p["name"], "Compounds": p["count"]}
         for p in visible_plants_display
     ])
 
@@ -442,48 +569,95 @@ if visible_plants_display:
         on_select="rerun",
         selection_mode="multi-row",
         key="plant_table",
+        column_config={
+            "🌿  Plant Name": st.column_config.TextColumn(width="large"),
+            "Compounds": st.column_config.NumberColumn(
+                width="small",
+                format="%d",
+            ),
+        },
     )
 
-    # Update selected plants from table selection
     selected_rows = event.selection.rows if event.selection else []
     st.session_state.selected_plants = {
         visible_plants_display[i]["name"] for i in selected_rows
     }
 
+    if selected_rows:
+        st.markdown(
+            f'<p class="hint-text">✓ {len(selected_rows)} plant(s) selected</p>',
+            unsafe_allow_html=True
+        )
+
     # Per-compound expander — shown below table for selected plants only
     if st.session_state.get("scanned") and selected_rows:
-        st.markdown("#### Selected plant compounds")
+        st.markdown('<div class="section-label">Compounds in selected plants</div>', unsafe_allow_html=True)
         for i in selected_rows:
             plant = visible_plants_display[i]
             if not plant.get("compounds"):
                 continue
-            with st.expander(f"{plant['name']} — {len(plant['compounds'])} compounds"):
-                for c_idx, compound in enumerate(plant["compounds"]):
-                    c1, c2 = st.columns([0.8, 0.2])
-                    c1.write(f"**{compound['name']}** ({compound['plant_part']})")
-                    btn_key = f"btn_{i}_{c_idx}"
-                    if f"data_{btn_key}" not in st.session_state:
-                        if c2.button("Get SDF", key=f"load_{btn_key}"):
-                            with st.spinner("..."):
-                                data = fetch_single_sdf(compound["imphy_id"])
-                                if data:
-                                    st.session_state[f"data_{btn_key}"] = data
-                                    st.rerun()
-                    else:
-                        c2.download_button(
-                            label="📥 Save",
-                            data=st.session_state[f"data_{btn_key}"],
-                            file_name=f"{compound['name']}.sdf",
-                            key=btn_key,
-                            type="primary",
+            with st.expander(f"🌱 {plant['name']}  ·  {len(plant['compounds'])} compounds"):
+                # Group by plant part for cleaner display
+                parts = {}
+                for compound in plant["compounds"]:
+                    parts.setdefault(compound["plant_part"], []).append(compound)
+
+                for part, part_compounds in parts.items():
+                    st.markdown(
+                        f'<div style="font-size:0.72rem;font-weight:600;letter-spacing:0.08em;'
+                        f'text-transform:uppercase;color:#58a6ff;margin:0.8rem 0 0.4rem 0;">'
+                        f'📍 {part or "Unknown part"}</div>',
+                        unsafe_allow_html=True
+                    )
+                    for c_idx, compound in enumerate(part_compounds):
+                        global_idx = plant["compounds"].index(compound)
+                        c1, c2 = st.columns([0.82, 0.18])
+                        c1.markdown(
+                            f'<div style="color:#e6edf3;font-size:0.88rem;padding:0.25rem 0;">'
+                            f'<span style="font-weight:500;">{compound["name"]}</span> '
+                            f'<span style="color:#8b949e;font-size:0.78rem;">{compound["imphy_id"]}</span>'
+                            f'</div>',
+                            unsafe_allow_html=True
                         )
+                        btn_key = f"btn_{i}_{global_idx}"
+                        if f"data_{btn_key}" not in st.session_state:
+                            if c2.button("⬇ SDF", key=f"load_{btn_key}"):
+                                with st.spinner(""):
+                                    data = fetch_single_sdf(compound["imphy_id"])
+                                    if data:
+                                        st.session_state[f"data_{btn_key}"] = data
+                                        st.rerun()
+                        else:
+                            c2.download_button(
+                                label="📥 Save",
+                                data=st.session_state[f"data_{btn_key}"],
+                                file_name=f"{compound['name']}.sdf",
+                                key=btn_key,
+                                type="primary",
+                            )
 else:
-    st.info("No plants match the current filters.")
+    st.markdown("""
+    <div style="text-align:center; padding:3rem 1rem; color:#8b949e;">
+        <div style="font-size:2.5rem; margin-bottom:0.5rem;">🔍</div>
+        <div style="font-size:1rem; font-weight:500; color:#e6edf3;">No plants match your filters</div>
+        <div style="font-size:0.85rem; margin-top:0.3rem;">Try adjusting the compound range or removing the plant part filter.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 # ── DOWNLOAD SECTION ──────────────────────────────────────────────────────────
 st.divider()
-st.markdown("### 📦 Download SDFs")
+st.markdown("""
+<div style="margin-bottom:0.8rem;">
+    <div class="section-label">Bulk Download</div>
+    <div style="font-size:1.3rem; font-weight:700; color:#e6edf3; font-family:'DM Serif Display',serif;">
+        📦 Download SDF Files
+    </div>
+    <div style="color:#8b949e; font-size:0.85rem; margin-top:0.2rem;">
+        Downloads are packaged as a ZIP, organized by plant name.
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 if download_mode == "Selected plants only":
     plants_to_download = [p for p in visible_plants_display if p["name"] in st.session_state.selected_plants]
